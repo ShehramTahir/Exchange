@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>EMILY LOCUTORIO - TASAS</title>
+    <style>
+        :root {
+            --bg: #FFFFFF; 
+            --card: #F2F2F2; 
+            --gold: #D4AF37;
+            --green: #15803d; 
+            --text: #000000;
+            --subtext: #444444;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Arial Black', sans-serif;
+            margin: 0; padding: 0;
+            overflow: hidden; 
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1.5vw 4vw;
+            background: #FFFFFF;
+            border-bottom: 0.6vw solid var(--gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .header-left h1 { font-size: 4.5vw; margin: 0; color: #000000; text-transform: uppercase; line-height: 1; }
+        .subtitle { font-size: 2.2vw; color: var(--green); font-weight: bold; }
+        
+        .date { font-size: 1.8vw; color: #000000; text-align: right; margin-bottom: 5px; font-weight: bold; }
+        .logos-row { display: flex; gap: 2vw; align-items: center; }
+        .logo-ria { height: 7vw; border-radius: 50%; border: 0.2vw solid #ddd; }
+        .logo-wu { height: 8vw; }
+
+        #scroll-container { flex-grow: 1; position: relative; overflow: hidden; background: #FFFFFF; }
+        #scroller { position: absolute; width: 100%; top: 0; left: 0; animation: scrollUp 40s linear infinite; }
+
+        @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vw; padding: 0 4vw; }
+        tr { 
+            background: var(--card); 
+            border-radius: 2vw; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        
+        td { padding: 2.5vw; vertical-align: middle; border: 1px solid #ddd; }
+        td:first-child { border-radius: 2vw 0 0 2vw; border-right: none; text-align: center; }
+        td:nth-child(2) { border-left: none; border-right: none; font-size: 4.5vw; color: #000000; width: 50%; } 
+        td:last-child { 
+            border-radius: 0 2vw 2vw 0;
+            border-left: none;
+            text-align: right; 
+            color: var(--green); 
+            font-size: 7.5vw; 
+            font-family: 'Arial Black', sans-serif; 
+        }
+
+        .flag-box { font-size: 7vw; display: inline-block; animation: wave 3s ease-in-out infinite; }
+        @keyframes wave { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .curr-label { display: block; font-size: 1.8vw; color: var(--subtext); font-family: sans-serif; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <h1>EMILY LOCUTORIO</h1>
+        <div class="subtitle">TASAS EN VIVO POR 1€</div>
+    </div>
+    <div class="logo-box">
+        <div class="date" id="currentDate">--/--/----</div>
+        <div class="logos-row">
+            <img class="logo-ria" src="https://media.licdn.com/dms/image/v2/C4D0BAQFOLMjEUQ3TDg/company-logo_200_200/company-logo_200_200/0/1630514301775/ria_financial_logo?e=2147483647&v=beta&t=Xs8HzR4A7TNNfTXUGhC08rNKO4PMBpxL3cY5b975D6g">
+            <img class="logo-wu" src="https://images.squarespace-cdn.com/content/v1/54a827bae4b0375c084b16b6/1705167254454-7UUQ6NRFZEC9K0DYFDAG/wu_case-02.png?format=2500w">
+        </div>
+    </div>
+</header>
+
+<div id="scroll-container">
+    <div id="scroller">
+        <table id="ratesTable">
+            <tbody id="tableBody">
+                <tr><td colspan="3" style="text-align:center; font-size:3vw; border:none; padding-top:10vh;">Cargando tasas...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. KEEP SCREEN AWAKE
+    async function stayAwake() {
+        try {
+            if ('wakeLock' in navigator) {
+                await navigator.wakeLock.request('screen');
+                console.log("WakeLock Active");
+            }
+        } catch (err) { console.log("WakeLock Failed"); }
+    }
+    stayAwake();
+    document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') stayAwake(); });
+
+    // 2. DATA FETCHING LOGIC
+    const sheetId = '1CCWJaJCsaewVCpmCglL50xKdamLB77wanCY-Xxlg4kg';
+    const order = ["BOLIVIA", "ECUADOR", "PERÚ", "BRASIL", "COLOMBIA", "PARAGUAY", "HONDURAS", "ARGENTINA", "NICARAGUA", "GUATEMALA", "EL SALVADOR", "REP. DOMINICANA"];
+
+    function fetchData() {
+        // Only try to fetch if we have internet connection
+        if (!navigator.onLine) {
+            console.log("Offline: Preserving old rates.");
+            return;
+        }
+
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:renderData&headers=0`;
+        const oldScript = document.getElementById('jsonp-script');
+        if (oldScript) oldScript.remove();
+
+        const script = document.createElement('script');
+        script.id = 'jsonp-script';
+        script.src = url;
+        script.onerror = () => console.log("Network error: Rates preserved.");
+        document.body.appendChild(script);
+    }
+
+    window.renderData = function(data) {
+        if (!data || !data.table) return;
+        const rows = data.table.rows;
+        const dataMap = {};
+
+        rows.forEach(r => {
+            if (!r.c || !r.c[0] || r.c[0].v === null) return;
+            const name = r.c[0].v.toString().toUpperCase().trim();
+            const cleanKey = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            dataMap[cleanKey] = {
+                name: name,
+                flag: r.c[1] ? r.c[1].v : "🌐",
+                currency: r.c[2] ? r.c[2].v : "",
+                rate: r.c[3] ? (r.c[3].f || r.c[3].v) : "---"
+            };
+        });
+
+        let html = '';
+        order.forEach(country => {
+            const cleanCountry = country.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const item = dataMap[cleanCountry];
+            if (item) {
+                html += `<tr>
+                    <td><span class="flag-box">${item.flag}</span></td>
+                    <td>${item.name}<span class="curr-label">${item.currency}</span></td>
+                    <td>${item.rate}</td>
+                </tr>`;
+            }
+        });
+
+        // Fail-safe: Only update screen if we actually got data back
+        if (html !== '') {
+            document.getElementById('tableBody').innerHTML = html + html;
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
+        }
+    };
+
+    // Initial Load and Auto-Update Loop
+    fetchData();
+    setInterval(fetchData, 30000); 
+</script>
+
+</body>
+</html>
