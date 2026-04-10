@@ -38,11 +38,7 @@
         .logo-ria { height: 7vw; border-radius: 50%; }
         .logo-wu { height: 8vw; }
 
-        #scroll-container { 
-            flex-grow: 1; 
-            position: relative; 
-            overflow: hidden; 
-        }
+        #scroll-container { flex-grow: 1; position: relative; overflow: hidden; }
         
         #scroller { 
             position: absolute; 
@@ -50,7 +46,6 @@
             top: 0; 
             left: 0; 
             will-change: transform;
-            /* Hardware Acceleration for smooth movement */
             -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
         }
@@ -74,7 +69,6 @@
             white-space: nowrap;
         }
 
-        /* Fixed Image Flags */
         .flag-img { width: 8vw; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .curr-label { display: block; font-size: 1.8vw; color: #444; font-family: sans-serif; }
     </style>
@@ -103,7 +97,6 @@
 <script>
     const sheetId = 'SECRET_PLACEHOLDER';
     
-    // Country Configuration with Image Flags
     const config = [
         { name: "BOLIVIA", code: "BO", curr: "Bolivianos" },
         { name: "ECUADOR", code: "EC", curr: "Dólares (US)" },
@@ -121,10 +114,12 @@
 
     function fetchData() {
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:renderData&headers=0`;
+        const oldScript = document.getElementById('jsonp-script');
+        if (oldScript) oldScript.remove();
         const script = document.createElement('script');
+        script.id = 'jsonp-script';
         script.src = url;
         document.body.appendChild(script);
-        script.onload = () => script.remove();
     }
 
     window.renderData = function(data) {
@@ -152,18 +147,17 @@
         const scroller = document.getElementById('scroller');
         const tableBody = document.getElementById('tableBody');
         
-        // The Magic Loop: We put the list TWICE. 
-        // When we scroll 50%, it resets to 0% and looks identical.
-        tableBody.innerHTML = html + html; 
+        // LOOP FIX: Tripling data ensures no gaps
+        tableBody.innerHTML = html + html + html; 
         
-        // Reset animation
+        // FORCE RESET ANIMATION
         scroller.style.animation = 'none';
         void scroller.offsetWidth; 
-        scroller.style.animation = 'scrollUp 40s linear infinite';
+        scroller.style.animation = 'scrollUp 45s linear infinite';
     };
 
     fetchData();
-    setInterval(fetchData, 60000); // Update rates every minute
+    setInterval(fetchData, 60000); 
 </script>
 
 </body>
