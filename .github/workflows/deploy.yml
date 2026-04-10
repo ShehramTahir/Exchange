@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Runs every time you push code
+    branches: ["main"]
 
 jobs:
   deploy:
@@ -18,8 +18,10 @@ jobs:
 
       - name: Inject Secret into HTML
         run: |
+          # This swaps the placeholder for the secret variable
           sed -i "s/SECRET_PLACEHOLDER/$SH_ID/g" index.html
         env:
+          # MAKE SURE THIS MATCHES YOUR GITHUB SETTINGS EXACTLY
           SH_ID: ${{secrets.GOOGLE_SHEET_ID}}
 
       - name: Upload artifact
