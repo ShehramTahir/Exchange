@@ -20,7 +20,7 @@ jobs:
         run: |
           sed -i "s/SECRET_PLACEHOLDER/$SH_ID/g" index.html
         env:
-          SH_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          SH_ID: ${{secrets.GOOGLE_SHEET_ID}}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
