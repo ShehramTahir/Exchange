@@ -50,14 +50,17 @@
             width: 100%; 
             top: 0; 
             left: 0; 
-            animation: scrollUp 40s linear infinite; 
+            animation: scrollUp 45s linear infinite; 
             /* SAFARI PERFORMANCE FIXES */
             will-change: transform;
             -webkit-transform: translateZ(0);
             transform: translateZ(0);
         }
 
-        @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        @keyframes scrollUp { 
+            0% { transform: translateY(0); } 
+            100% { transform: translateY(-50%); } 
+        }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vw; padding: 0 4vw; }
         tr { 
@@ -76,7 +79,7 @@
             color: var(--green); 
             font-size: 7.5vw; 
             font-family: 'Arial Black', sans-serif; 
-            /* SAFARI TEXT BREAKING FIX */
+            /* PREVENT TEXT BREAKING ON SAFARI */
             white-space: nowrap;
         }
 
@@ -117,7 +120,6 @@
         try {
             if ('wakeLock' in navigator) {
                 await navigator.wakeLock.request('screen');
-                console.log("WakeLock Active");
             }
         } catch (err) { console.log("WakeLock Failed"); }
     }
@@ -125,17 +127,15 @@
     document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') stayAwake(); });
 
     // 2. DATA FETCHING LOGIC
-    // GITHUB ACTIONS WILL REPLACE THIS PLACEHOLDER
+    // GitHub Secret Injection Target:
     const sheetId = 'SECRET_PLACEHOLDER';
     const order = ["BOLIVIA", "ECUADOR", "PERÚ", "BRASIL", "COLOMBIA", "PARAGUAY", "HONDURAS", "ARGENTINA", "NICARAGUA", "GUATEMALA", "EL SALVADOR", "REP. DOMINICANA"];
 
     function fetchData() {
         if (!navigator.onLine) return;
-
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:renderData&headers=0`;
         const oldScript = document.getElementById('jsonp-script');
         if (oldScript) oldScript.remove();
-
         const script = document.createElement('script');
         script.id = 'jsonp-script';
         script.src = url;
@@ -173,8 +173,8 @@
         });
 
         if (html !== '') {
-            // Duplicate HTML for smooth infinite scrolling
-            document.getElementById('tableBody').innerHTML = html + html;
+            // Triple the rows to ensure the animation loop is smooth and has enough height
+            document.getElementById('tableBody').innerHTML = html + html + html;
             document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
         }
     };
