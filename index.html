@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EMILY LOCUTORIO - TASAS</title>
     <style>
         :root {
@@ -43,7 +44,18 @@
         .logo-wu { height: 8vw; }
 
         #scroll-container { flex-grow: 1; position: relative; overflow: hidden; background: #FFFFFF; }
-        #scroller { position: absolute; width: 100%; top: 0; left: 0; animation: scrollUp 40s linear infinite; }
+        
+        #scroller { 
+            position: absolute; 
+            width: 100%; 
+            top: 0; 
+            left: 0; 
+            animation: scrollUp 40s linear infinite; 
+            /* SAFARI PERFORMANCE FIXES */
+            will-change: transform;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
 
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
 
@@ -64,6 +76,8 @@
             color: var(--green); 
             font-size: 7.5vw; 
             font-family: 'Arial Black', sans-serif; 
+            /* SAFARI TEXT BREAKING FIX */
+            white-space: nowrap;
         }
 
         .flag-box { font-size: 7vw; display: inline-block; animation: wave 3s ease-in-out infinite; }
@@ -111,15 +125,12 @@
     document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') stayAwake(); });
 
     // 2. DATA FETCHING LOGIC
-    const sheetId = '1CCWJaJCsaewVCpmCglL50xKdamLB77wanCY-Xxlg4kg';
+    // GITHUB ACTIONS WILL REPLACE THIS PLACEHOLDER
+    const sheetId = 'SECRET_PLACEHOLDER';
     const order = ["BOLIVIA", "ECUADOR", "PERÚ", "BRASIL", "COLOMBIA", "PARAGUAY", "HONDURAS", "ARGENTINA", "NICARAGUA", "GUATEMALA", "EL SALVADOR", "REP. DOMINICANA"];
 
     function fetchData() {
-        // Only try to fetch if we have internet connection
-        if (!navigator.onLine) {
-            console.log("Offline: Preserving old rates.");
-            return;
-        }
+        if (!navigator.onLine) return;
 
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:renderData&headers=0`;
         const oldScript = document.getElementById('jsonp-script');
@@ -128,7 +139,6 @@
         const script = document.createElement('script');
         script.id = 'jsonp-script';
         script.src = url;
-        script.onerror = () => console.log("Network error: Rates preserved.");
         document.body.appendChild(script);
     }
 
@@ -162,14 +172,13 @@
             }
         });
 
-        // Fail-safe: Only update screen if we actually got data back
         if (html !== '') {
+            // Duplicate HTML for smooth infinite scrolling
             document.getElementById('tableBody').innerHTML = html + html;
             document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
         }
     };
 
-    // Initial Load and Auto-Update Loop
     fetchData();
     setInterval(fetchData, 30000); 
 </script>
