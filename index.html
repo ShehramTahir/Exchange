@@ -43,23 +43,28 @@
         .logo-ria { height: 7vw; border-radius: 50%; border: 0.2vw solid #ddd; }
         .logo-wu { height: 8vw; }
 
-        #scroll-container { flex-grow: 1; position: relative; overflow: hidden; background: #FFFFFF; }
+        #scroll-container { 
+            flex-grow: 1; 
+            position: relative; 
+            overflow: hidden; 
+            background: var(--bg); 
+        }
         
         #scroller { 
             position: absolute; 
             width: 100%; 
             top: 0; 
             left: 0; 
-            animation: scrollUp 45s linear infinite; 
-            /* SAFARI PERFORMANCE FIXES */
+            /* SAFARI 3D ACCELERATION FIX */
             will-change: transform;
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            animation: scrollUp 35s linear infinite; 
         }
 
         @keyframes scrollUp { 
-            0% { transform: translateY(0); } 
-            100% { transform: translateY(-50%); } 
+            0% { transform: translate3d(0, 0, 0); } 
+            100% { transform: translate3d(0, -50%, 0); } 
         }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vw; padding: 0 4vw; }
@@ -79,8 +84,7 @@
             color: var(--green); 
             font-size: 7.5vw; 
             font-family: 'Arial Black', sans-serif; 
-            /* PREVENT TEXT BREAKING ON SAFARI */
-            white-space: nowrap;
+            white-space: nowrap; /* NO-WRAP FIX */
         }
 
         .flag-box { font-size: 7vw; display: inline-block; animation: wave 3s ease-in-out infinite; }
@@ -127,7 +131,6 @@
     document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') stayAwake(); });
 
     // 2. DATA FETCHING LOGIC
-    // GitHub Secret Injection Target:
     const sheetId = 'SECRET_PLACEHOLDER';
     const order = ["BOLIVIA", "ECUADOR", "PERÚ", "BRASIL", "COLOMBIA", "PARAGUAY", "HONDURAS", "ARGENTINA", "NICARAGUA", "GUATEMALA", "EL SALVADOR", "REP. DOMINICANA"];
 
@@ -173,9 +176,12 @@
         });
 
         if (html !== '') {
-            // Triple the rows to ensure the animation loop is smooth and has enough height
-            document.getElementById('tableBody').innerHTML = html + html + html;
-            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
+            const tableBody = document.getElementById('tableBody');
+            // TRIPLE BUFFER TO ELIMINATE EMPTY ROWS
+            tableBody.innerHTML = html + html + html; 
+            setTimeout(() => {
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
+            }, 100);
         }
     };
 
