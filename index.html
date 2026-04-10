@@ -55,11 +55,11 @@
             width: 100%; 
             top: 0; 
             left: 0; 
-            /* SAFARI 3D ACCELERATION FIX */
             will-change: transform;
             -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
-            animation: scrollUp 35s linear infinite; 
+            /* Reset via JS if it stops */
+            animation: scrollUp 60s linear infinite; 
         }
 
         @keyframes scrollUp { 
@@ -84,7 +84,7 @@
             color: var(--green); 
             font-size: 7.5vw; 
             font-family: 'Arial Black', sans-serif; 
-            white-space: nowrap; /* NO-WRAP FIX */
+            white-space: nowrap;
         }
 
         .flag-box { font-size: 7vw; display: inline-block; animation: wave 3s ease-in-out infinite; }
@@ -176,12 +176,22 @@
         });
 
         if (html !== '') {
+            const scroller = document.getElementById('scroller');
             const tableBody = document.getElementById('tableBody');
-            // TRIPLE BUFFER TO ELIMINATE EMPTY ROWS
+            
+            // RESET ANIMATION: Forces Safari to recalculate table height
+            scroller.style.animation = 'none';
+            
+            // TRIPLE THE DATA: Fixes "Empty Rows" on long screens
             tableBody.innerHTML = html + html + html; 
-            setTimeout(() => {
-                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
-            }, 100);
+            
+            // TRIGGER REFLOW
+            void scroller.offsetWidth; 
+            
+            // RESTART ANIMATION
+            scroller.style.animation = 'scrollUp 60s linear infinite';
+
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES');
         }
     };
 
