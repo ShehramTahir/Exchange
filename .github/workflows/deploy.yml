@@ -18,8 +18,9 @@ jobs:
 
       - name: Inject Secret into HTML
         run: |
-          # This replaces the placeholder with your actual secret
-          sed -i "s/SECRET_PLACEHOLDER/${{ secrets.GOOGLE_SHEET_ID }}/g" index.html
+          sed -i "s/SECRET_PLACEHOLDER/$SH_ID/g" index.html
+        env:
+          SH_ID: ${{ secrets.GOOGLE_SHEET_ID }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
