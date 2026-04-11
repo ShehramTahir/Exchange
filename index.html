@@ -24,19 +24,26 @@
         }
 
         header {
-            padding: 1.5vw 4vw;
+            padding: 2vw 4vw;
             background: #FFFFFF;
             border-bottom: 0.6vw solid var(--gold);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center; /* Centered the title since logos are gone */
             z-index: 100;
         }
 
-        .header-left h1 { font-size: 4.5vw; margin: 0; color: #000000; line-height: 1; }
-        .subtitle { font-size: 2.2vw; color: var(--green); font-weight: bold; }
-        .logo-ria { height: 7vw; border-radius: 50%; }
-        .logo-wu { height: 8vw; }
+        .header-left h1 { 
+            font-size: 5vw; 
+            margin: 0; 
+            color: #000000; 
+            text-transform: uppercase;
+            line-height: 1.1; 
+        }
+        .subtitle { 
+            font-size: 2.5vw; 
+            color: var(--green); 
+            font-weight: bold; 
+            margin-top: 5px;
+        }
 
         #scroll-container { flex-grow: 1; position: relative; overflow: hidden; }
         
@@ -79,10 +86,6 @@
     <div class="header-left">
         <h1>EMILY LOCUTORIO</h1>
         <div class="subtitle">TASAS EN VIVO POR 1€</div>
-    </div>
-    <div style="display:flex; gap:2vw; align-items:center;">
-        <img class="logo-ria" src="https://media.licdn.com/dms/image/v2/C4D0BAQFOLMjEUQ3TDg/company-logo_200_200/company-logo_200_200/0/1630514301775/ria_financial_logo?e=2147483647&v=beta&t=Xs8HzR4A7TNNfTXUGhC08rNKO4PMBpxL3cY5b975D6g">
-        <img class="logo-wu" src="https://images.squarespace-cdn.com/content/v1/54a827bae4b0375c084b16b6/1705167254454-7UUQ6NRFZEC9K0DYFDAG/wu_case-02.png?format=2500w">
     </div>
 </header>
 
@@ -147,10 +150,8 @@
         const scroller = document.getElementById('scroller');
         const tableBody = document.getElementById('tableBody');
         
-        // LOOP FIX: Tripling data ensures no gaps
         tableBody.innerHTML = html + html + html; 
         
-        // FORCE RESET ANIMATION
         scroller.style.animation = 'none';
         void scroller.offsetWidth; 
         scroller.style.animation = 'scrollUp 45s linear infinite';
