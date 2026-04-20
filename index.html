@@ -32,7 +32,6 @@
         }
 
         .header-left h1 { 
-            /* Adjusted Min and Max to prevent breaking on narrow phone screens */
             font-size: clamp(18px, 4vw, 42px); 
             margin: 0; 
             color: #000000; 
@@ -44,7 +43,6 @@
         
         .address {
             font-family: 'Arial', sans-serif;
-            /* Scaled down address for mobile compatibility */
             font-size: clamp(10px, 1.8vw, 20px); 
             color: #222222;
             margin: 0.5vw 0;
@@ -115,6 +113,7 @@
     const sheetId = 'SECRET_PLACEHOLDER';
     
     const config = [
+        { name: "VENEZUELA", code: "VE", curr: "Bolívar Soberano" },
         { name: "BOLIVIA", code: "BO", curr: "Bolivianos" },
         { name: "ECUADOR", code: "EC", curr: "Dólares (US)" },
         { name: "PERU", code: "PE", curr: "Soles" },
