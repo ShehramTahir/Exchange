@@ -64,7 +64,6 @@
             top: 0; 
             left: 0; 
             will-change: transform;
-            -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
         }
 
@@ -111,7 +110,8 @@
 
 <script>
     const sheetId = 'SECRET_PLACEHOLDER';
-    
+    let lastDataHash = ""; // Stores a "fingerprint" of the data to check for updates
+
     const config = [
         { name: "VENEZUELA", code: "VE", curr: "Bolívar Soberano" },
         { name: "BOLIVIA", code: "BO", curr: "Bolivianos" },
@@ -140,6 +140,15 @@
 
     window.renderData = function(data) {
         if (!data || !data.table) return;
+        
+        // Generate a quick string of all rates to see if anything changed
+        const currentDataString = JSON.stringify(data.table.rows);
+        if (currentDataString === lastDataHash) {
+            console.log("No changes detected in Google Sheet. Skipping update.");
+            return; // Stop here if data is identical
+        }
+        lastDataHash = currentDataString;
+
         const rows = data.table.rows;
         const dataMap = {};
 
@@ -171,7 +180,8 @@
     };
 
     fetchData();
-    setInterval(fetchData, 60000); 
+    // Refresh every 5 minutes (300,000ms) to save data
+    setInterval(fetchData, 300000); 
 </script>
 
 </body>
