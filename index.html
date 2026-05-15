@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EMILY MULTISERVICIOS LOCUTORIO - TASAS</title>
+    <title>EMILY MULTISERVICIOS - LIVE RATES</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #FFFFFF; 
-            --card: #F2F2F2; 
-            --gold: #D4AF37;
-            --green: #15803d; 
-            --text: #000000;
+            --canvas-soft: #e8ebe6; 
+            --white: #ffffff;       
+            --ink: #0e0f0c;         
+            --primary: #9fe870;     
+            --body-text: #454745;   
+            --positive: #2ead4b;    
         }
+
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Arial Black', sans-serif;
+            background-color: var(--canvas-soft);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
             margin: 0; padding: 0;
             overflow: hidden; 
             height: 100vh;
@@ -23,81 +26,109 @@
             flex-direction: column;
         }
 
+        /* HEADER */
         header {
-            padding: 1.5vw 2vw;
-            background: #FFFFFF;
-            border-bottom: 0.6vw solid var(--gold);
+            padding: 3vh 5vw;
+            background: var(--canvas-soft);
             text-align: center;
+            position: relative; /* Needed for absolute clock positioning */
             z-index: 100;
         }
 
-        .header-left h1 { 
-            font-size: clamp(18px, 4vw, 42px); 
+        /* DATE & TIME STYLING */
+        #live-clock {
+            position: absolute;
+            top: 2vh;
+            right: 3vw;
+            text-align: right;
+            color: var(--ink);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        #clock-time { font-size: clamp(16px, 2vw, 28px); font-weight: 900; display: block; }
+        #clock-date { font-size: clamp(10px, 1.2vw, 16px); color: var(--body-text); text-transform: uppercase; }
+
+        header h1 { 
+            font-size: clamp(24px, 4.5vw, 52px); 
+            font-weight: 900; 
             margin: 0; 
-            color: #000000; 
-            text-transform: uppercase;
-            line-height: 1.1; 
-            white-space: nowrap; 
-            letter-spacing: -0.02em;
+            letter-spacing: -0.04em; 
+            line-height: 1.1;
         }
         
         .address {
-            font-family: 'Arial', sans-serif;
-            font-size: clamp(10px, 1.8vw, 20px); 
-            color: #222222;
-            margin: 0.5vw 0;
+            font-size: clamp(10px, 1.4vw, 16px); 
+            color: var(--body-text);
+            margin: 0.5vh 0;
+            font-weight: 600;
+        }
+
+        .subtitle-pill { 
+            display: inline-block;
+            background-color: var(--primary); 
+            color: var(--ink);
+            font-size: clamp(12px, 1.3vw, 18px); 
             font-weight: 900;
-            line-height: 1.2;
+            padding: 8px 20px;
+            border-radius: 24px; 
+            margin-top: 1vh;
+            letter-spacing: -0.02em;
         }
 
-        .subtitle { 
-            font-size: clamp(14px, 2.2vw, 24px); 
-            color: var(--green); 
-            font-weight: bold; 
-        }
-
+        /* SCROLL AREA */
         #scroll-container { flex-grow: 1; position: relative; overflow: hidden; }
-        
-        #scroller { 
-            position: absolute; 
-            width: 100%; 
-            top: 0; 
-            left: 0; 
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
-        }
+        #scroller { position: absolute; width: 100%; top: 0; left: 0; will-change: transform; }
 
         @keyframes scrollUp { 
             0% { transform: translate3d(0, 0, 0); } 
             100% { transform: translate3d(0, -50%, 0); } 
         }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vw; padding: 0 4vw; }
-        tr { background: var(--card); border-radius: 2vw; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 5vw 5vw; }
+        tr { background: var(--white); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        td { padding: 2.5vh 3vw; vertical-align: middle; }
         
-        td { padding: 2.5vw; vertical-align: middle; }
-        td:first-child { border-radius: 2vw 0 0 2vw; width: 15%; text-align: center; }
-        td:nth-child(2) { font-size: 4.5vw; color: #000000; width: 45%; } 
-        td:last-child { 
-            border-radius: 0 2vw 2vw 0;
-            text-align: right; 
-            color: var(--green); 
-            font-size: 7.5vw; 
-            white-space: nowrap;
+        td:first-child { border-radius: 24px 0 0 24px; width: 10%; text-align: center; }
+        td:nth-child(2) { width: 45%; }
+
+        .country-name {
+            font-size: clamp(18px, 3vw, 32px);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            display: block;
+            text-transform: uppercase;
         }
 
-        .flag-img { width: 8vw; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .curr-label { display: block; font-size: 1.8vw; color: #444; font-family: sans-serif; }
+        .curr-label { 
+            display: block; 
+            font-size: clamp(11px, 1.3vw, 16px); 
+            color: var(--body-text); 
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        td:last-child { 
+            border-radius: 0 24px 24px 0;
+            text-align: right; 
+            color: var(--positive); 
+            font-size: clamp(24px, 5.5vw, 60px); 
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+
+        .flag-img { width: 6vw; height: auto; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="header-left">
-        <h1>Emily Multiservicios Locutorio</h1>
-        <div class="address">Calle Gabino Jimeno 9, Metro Usera (Salida Amparo Usera), Madrid</div>
-        <div class="subtitle">TASAS EN VIVO POR 1€</div>
+    <div id="live-clock">
+        <span id="clock-time">00:00:00</span>
+        <span id="clock-date">Cargando...</span>
     </div>
+    <h1>Emily Multiservicios Locutorio</h1>
+    <div class="address">Calle Gabino Jimeno 9, Metro Usera, Madrid</div>
+    <div class="subtitle-pill">TASAS EN VIVO POR 1€</div>
 </header>
 
 <div id="scroll-container">
@@ -109,8 +140,21 @@
 </div>
 
 <script>
-    const sheetId = 'SECRET_PLACEHOLDER';
-    let lastDataHash = ""; // Stores a "fingerprint" of the data to check for updates
+    // --- UPDATE TIME & DATE ---
+    function updateClock() {
+        const now = new Date();
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+        
+        document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-ES', timeOptions);
+        document.getElementById('clock-date').textContent = now.toLocaleDateString('es-ES', dateOptions);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- SHEETS LOGIC ---
+    const sheetId = '1CCWJaJCsaewVCpmCglL50xKdamLB77wanCY-Xxlg4kg'; 
+    let lastDataHash = ""; 
 
     const config = [
         { name: "VENEZUELA", code: "VE", curr: "Bolívar Soberano" },
@@ -140,18 +184,12 @@
 
     window.renderData = function(data) {
         if (!data || !data.table) return;
-        
-        // Generate a quick string of all rates to see if anything changed
         const currentDataString = JSON.stringify(data.table.rows);
-        if (currentDataString === lastDataHash) {
-            console.log("No changes detected in Google Sheet. Skipping update.");
-            return; // Stop here if data is identical
-        }
+        if (currentDataString === lastDataHash) return;
         lastDataHash = currentDataString;
 
         const rows = data.table.rows;
         const dataMap = {};
-
         rows.forEach(r => {
             if (!r.c || !r.c[0]) return;
             const name = r.c[0].v.toString().toUpperCase().trim();
@@ -164,23 +202,20 @@
             const rate = dataMap[c.name] || "---";
             html += `<tr>
                 <td><img class="flag-img" src="https://flagcdn.com/w160/${c.code.toLowerCase()}.png"></td>
-                <td>${c.name}<span class="curr-label">${c.curr}</span></td>
+                <td>
+                    <span class="country-name">${c.name}</span>
+                    <span class="curr-label">${c.curr}</span>
+                </td>
                 <td>${rate}</td>
             </tr>`;
         });
 
-        const scroller = document.getElementById('scroller');
         const tableBody = document.getElementById('tableBody');
-        
         tableBody.innerHTML = html + html + html; 
-        
-        scroller.style.animation = 'none';
-        void scroller.offsetWidth; 
-        scroller.style.animation = 'scrollUp 45s linear infinite';
+        document.getElementById('scroller').style.animation = 'scrollUp 45s linear infinite';
     };
 
     fetchData();
-    // Refresh every 5 minutes (300,000ms) to save data
     setInterval(fetchData, 300000); 
 </script>
 
