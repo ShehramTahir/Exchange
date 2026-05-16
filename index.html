@@ -28,7 +28,6 @@
             display: flex;
             flex-direction: column;
             
-            /* PREVENTS ACCIDENTAL TEXT SELECTION ACROSS THE WHOLE PAGE */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -128,7 +127,7 @@
             flex-grow: 1; 
             position: relative; 
             overflow: hidden; 
-            touch-action: none; /* Prevents mobile browser pull-to-refresh gestures */
+            touch-action: none; 
         }
         #scroller { 
             position: absolute; 
@@ -212,7 +211,8 @@
 <div id="scroll-container">
     <div id="scroller">
         <table id="ratesTable">
-            <tbody id="tableBody"></tbody>
+            <tbody id="tableBody1"></tbody>
+            <tbody id="tableBody2"></tbody>
         </table>
     </div>
 </div>
@@ -293,44 +293,46 @@
             </tr>`;
         });
 
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = html + html + html; 
+        // Split lists cleanly into two identical elements for perfect boundary tracking
+        document.getElementById('tableBody1').innerHTML = html;
+        document.getElementById('tableBody2').innerHTML = html; 
         
-        // Initialize the smooth engine after content finishes rendering
         setupSmoothScrollEngine();
     };
 
-    // --- ANTI-SHAKE UNIFIED ANIMATION ENGINE ---
+    // --- GLITCH-FREE UNIFIED SCROLL ENGINE ---
     function setupSmoothScrollEngine() {
         const container = document.getElementById('scroll-container');
         const scroller = document.getElementById('scroller');
+        const firstGroup = document.getElementById('tableBody1');
 
-        let yPos = 0;              // Current position coordinate
-        let speed = 0.8;           // Running speed pixels per frame
-        let isPaused = false;      // Hover state tracker
-        let isDragging = false;    // Pointer drag tracker
-        let startY = 0;            // Starting coordinate drag reference
+        let yPos = 0;              
+        let speed = 0.8;           
+        let isPaused = false;      
+        let isDragging = false;    
+        let startY = 0;            
 
         function updateLoop() {
-            const loopBoundary = -scroller.offsetHeight / 3;
+            // Get the EXACT pixel height of one full list set dynamically
+            const loopBoundary = -firstGroup.offsetHeight;
 
             if (!isPaused && !isDragging) {
-                yPos -= speed; // Move upwards smoothly
+                yPos -= speed; 
                 
-                // Infinite seamless loop point check
+                // Perfect seamless loop checkpoint
                 if (yPos <= loopBoundary) {
-                    yPos = 0;
+                    yPos += firstGroup.offsetHeight; // Reset smoothly without losing frame steps
                 }
                 scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
             }
             requestAnimationFrame(updateLoop);
         }
 
-        // DESKTOP HOVER LISTENERS
+        // HOVER LISTENERS
         container.addEventListener('mouseenter', () => isPaused = true);
         container.addEventListener('mouseleave', () => isPaused = false);
 
-        // DRAG ENGINE CONTROL HANDLERS
+        // DRAG EVENT LOGIC
         function onDragStart(e) {
             isDragging = true;
             const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
@@ -342,9 +344,11 @@
             const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
             yPos = pointerY - startY;
 
-            const loopBoundary = -scroller.offsetHeight / 3;
-            if (yPos > 0) yPos = loopBoundary;
-            if (yPos < loopBoundary) yPos = 0;
+            const loopBoundary = -firstGroup.offsetHeight;
+            
+            // Loop boundaries for scrolling manually
+            if (yPos > 0) yPos -= firstGroup.offsetHeight;
+            if (yPos < loopBoundary) yPos += firstGroup.offsetHeight;
 
             scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
         }
@@ -363,7 +367,7 @@
         window.addEventListener('mousemove', onDragMove);
         window.addEventListener('mouseup', onDragEnd);
 
-        // Kickstart the render cycle loop
+        // Run Loop
         requestAnimationFrame(updateLoop);
     }
 
