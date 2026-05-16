@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EMILY MULTISERVICIOS - LIVE RATES</title>
+    
+    <link rel="icon" type="image/png" href="euro_3524336.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,7 +29,7 @@
             flex-direction: column;
         }
 
-        /* NEW FLEXBOX HEADER */
+        /* FLEXBOX HEADER */
         header {
             padding: 3vh 5vw 2vh 5vw;
             background: var(--canvas-soft);
@@ -68,7 +71,7 @@
             letter-spacing: -0.02em;
         }
 
-        /* NEW TIME & DATE CONTAINER */
+        /* TIME & DATE CONTAINER */
         #live-clock {
             text-align: right;
             color: var(--ink);
@@ -79,7 +82,7 @@
         #clock-time { font-size: clamp(18px, 2.2vw, 32px); font-weight: 900; display: block; }
         #clock-date { font-size: clamp(11px, 1.2vw, 16px); color: var(--body-text); text-transform: uppercase; }
 
-        /* PERFECT MOBILE ADJUSTMENT */
+        /* MOBILE ADJUSTMENT */
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
@@ -123,7 +126,7 @@
             100% { transform: translate3d(0, -50%, 0); } 
         }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 5vw 5vw; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 2vw 5vw; }
         tr { background: var(--white); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         td { padding: 2.5vh 3vw; vertical-align: middle; }
         
@@ -156,6 +159,23 @@
         }
 
         .flag-img { width: 6vw; min-width: 40px; height: auto; border-radius: 4px; }
+
+        /* ATTRIBUTION FOOTER */
+        footer {
+            text-align: center;
+            padding: 1vh 0;
+            background: var(--canvas-soft);
+            z-index: 100;
+        }
+        footer a {
+            font-size: 10px;
+            color: var(--body-text);
+            text-decoration: none;
+            opacity: 0.6;
+        }
+        footer a:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +200,10 @@
         </table>
     </div>
 </div>
+
+<footer>
+    <a href="https://www.flaticon.com/free-icons/euro" title="euro icons" target="_blank" rel="noopener noreferrer">Euro icons created by Creative Stall Premium - Flaticon</a>
+</footer>
 
 <script>
     // --- LIVE CLOCK LOGIC (WITHOUT SECONDS) ---
