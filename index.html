@@ -26,54 +26,33 @@
             flex-direction: column;
         }
 
-        /* HEADER SECTION */
+        /* NEW FLEXBOX HEADER */
         header {
-            padding: 2vh 5vw;
+            padding: 3vh 5vw 2vh 5vw;
             background: var(--canvas-soft);
-            text-align: center;
-            position: relative;
             z-index: 100;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
-        /* DATE & TIME - Fixed for Mobile Overlap */
-        #live-clock {
-            position: absolute;
-            top: 2vh;
-            right: 3vw;
-            text-align: right;
-            color: var(--ink);
-            font-weight: 600;
-            line-height: 1.2;
-        }
-        #clock-time { font-size: clamp(16px, 2vw, 28px); font-weight: 900; display: block; }
-        #clock-date { font-size: clamp(10px, 1.2vw, 16px); color: var(--body-text); text-transform: uppercase; }
-
-        @media (max-width: 768px) {
-            #live-clock {
-                position: static; 
-                text-align: center;
-                margin-bottom: 10px;
-                order: -1; /* Clock moves above title on mobile */
-            }
-            header { padding: 2vh 2vw; }
+        .header-main {
+            text-align: left;
+            max-width: 70%;
         }
 
         header h1 { 
-            font-size: clamp(20px, 4.5vw, 52px); 
+            font-size: clamp(24px, 4vw, 48px); 
             font-weight: 900; 
             margin: 0; 
             letter-spacing: -0.04em; 
             line-height: 1.1;
-            max-width: 95%;
         }
         
         .address {
-            font-size: clamp(10px, 1.4vw, 16px); 
+            font-size: clamp(11px, 1.3vw, 16px); 
             color: var(--body-text);
-            margin: 0.5vh 0;
+            margin: 0.8vh 0;
             font-weight: 600;
         }
 
@@ -81,12 +60,58 @@
             display: inline-block;
             background-color: var(--primary); 
             color: var(--ink);
-            font-size: clamp(12px, 1.3vw, 18px); 
+            font-size: clamp(12px, 1.2vw, 18px); 
             font-weight: 900;
             padding: 8px 20px;
             border-radius: 24px; 
-            margin-top: 1vh;
+            margin-top: 0.5vh;
             letter-spacing: -0.02em;
+        }
+
+        /* NEW TIME & DATE CONTAINER */
+        #live-clock {
+            text-align: right;
+            color: var(--ink);
+            font-weight: 600;
+            line-height: 1.2;
+            padding-top: 0.5vh;
+        }
+        #clock-time { font-size: clamp(18px, 2.2vw, 32px); font-weight: 900; display: block; }
+        #clock-date { font-size: clamp(11px, 1.2vw, 16px); color: var(--body-text); text-transform: uppercase; }
+
+        /* PERFECT MOBILE ADJUSTMENT */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 2.5vh 4vw 1.5vh 4vw;
+            }
+            .header-main {
+                max-width: 100%;
+                text-align: center;
+            }
+            #live-clock {
+                text-align: center;
+                padding-top: 0;
+                margin: 1vh 0;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                justify-content: center;
+            }
+            #clock-time {
+                font-size: 18px;
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.05);
+                padding: 2px 8px;
+                border-radius: 6px;
+            }
+            #clock-date {
+                font-size: 13px;
+                display: inline-block;
+                font-weight: 600;
+            }
         }
 
         /* SCROLLING TABLE SECTION */
@@ -99,13 +124,7 @@
         }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 5vw 5vw; }
-        
-        tr { 
-            background: var(--white); 
-            border-radius: 24px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
-        }
-        
+        tr { background: var(--white); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         td { padding: 2.5vh 3vw; vertical-align: middle; }
         
         td:first-child { border-radius: 24px 0 0 24px; width: 10%; text-align: center; }
@@ -142,13 +161,16 @@
 <body>
 
 <header>
+    <div class="header-main">
+        <h1>Emily Multiservicios Locutorio</h1>
+        <div class="address">Calle Gabino Jimeno 9, Metro Usera, Madrid</div>
+        <div class="subtitle-pill">TASAS EN VIVO POR 1€</div>
+    </div>
+
     <div id="live-clock">
-        <span id="clock-time">00:00:00</span>
+        <span id="clock-time">00:00</span>
         <span id="clock-date">Cargando...</span>
     </div>
-    <h1>Emily Multiservicios Locutorio</h1>
-    <div class="address">Calle Gabino Jimeno 9, Metro Usera, Madrid</div>
-    <div class="subtitle-pill">TASAS EN VIVO POR 1€</div>
 </header>
 
 <div id="scroll-container">
@@ -160,10 +182,10 @@
 </div>
 
 <script>
-    // --- LIVE CLOCK LOGIC ---
+    // --- LIVE CLOCK LOGIC (WITHOUT SECONDS) ---
     function updateClock() {
         const now = new Date();
-        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
         const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
         
         document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-ES', timeOptions);
@@ -205,7 +227,6 @@
     window.renderData = function(data) {
         if (!data || !data.table) return;
 
-        // Only update the website if the Sheet data actually changed
         const currentDataString = JSON.stringify(data.table.rows);
         if (currentDataString === lastDataHash) return;
         lastDataHash = currentDataString;
@@ -238,7 +259,6 @@
     };
 
     fetchData();
-    // Refresh every 5 minutes (300,000ms) to save internet data
     setInterval(fetchData, 300000); 
 </script>
 
