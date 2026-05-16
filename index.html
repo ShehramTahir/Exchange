@@ -7,12 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --canvas-soft: #e8ebe6; 
-            --white: #ffffff;       
-            --ink: #0e0f0c;         
-            --primary: #9fe870;     
-            --body-text: #454745;   
-            --positive: #2ead4b;    
+            --canvas-soft: #e8ebe6; /* Sage Background */
+            --white: #ffffff;       /* Card Background */
+            --ink: #0e0f0c;         /* Near-black Text */
+            --primary: #9fe870;     /* Wise Lime Green */
+            --body-text: #454745;   /* Secondary Text */
+            --positive: #2ead4b;    /* Success Green */
         }
 
         body {
@@ -26,16 +26,19 @@
             flex-direction: column;
         }
 
-        /* HEADER */
+        /* HEADER SECTION */
         header {
-            padding: 3vh 5vw;
+            padding: 2vh 5vw;
             background: var(--canvas-soft);
             text-align: center;
-            position: relative; /* Needed for absolute clock positioning */
+            position: relative;
             z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* DATE & TIME STYLING */
+        /* DATE & TIME - Fixed for Mobile Overlap */
         #live-clock {
             position: absolute;
             top: 2vh;
@@ -48,12 +51,23 @@
         #clock-time { font-size: clamp(16px, 2vw, 28px); font-weight: 900; display: block; }
         #clock-date { font-size: clamp(10px, 1.2vw, 16px); color: var(--body-text); text-transform: uppercase; }
 
+        @media (max-width: 768px) {
+            #live-clock {
+                position: static; 
+                text-align: center;
+                margin-bottom: 10px;
+                order: -1; /* Clock moves above title on mobile */
+            }
+            header { padding: 2vh 2vw; }
+        }
+
         header h1 { 
-            font-size: clamp(24px, 4.5vw, 52px); 
+            font-size: clamp(20px, 4.5vw, 52px); 
             font-weight: 900; 
             margin: 0; 
             letter-spacing: -0.04em; 
             line-height: 1.1;
+            max-width: 95%;
         }
         
         .address {
@@ -75,7 +89,7 @@
             letter-spacing: -0.02em;
         }
 
-        /* SCROLL AREA */
+        /* SCROLLING TABLE SECTION */
         #scroll-container { flex-grow: 1; position: relative; overflow: hidden; }
         #scroller { position: absolute; width: 100%; top: 0; left: 0; will-change: transform; }
 
@@ -85,7 +99,13 @@
         }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 5vw 5vw; }
-        tr { background: var(--white); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        
+        tr { 
+            background: var(--white); 
+            border-radius: 24px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+        }
+        
         td { padding: 2.5vh 3vw; vertical-align: middle; }
         
         td:first-child { border-radius: 24px 0 0 24px; width: 10%; text-align: center; }
@@ -116,7 +136,7 @@
             letter-spacing: -0.04em;
         }
 
-        .flag-img { width: 6vw; height: auto; border-radius: 4px; }
+        .flag-img { width: 6vw; min-width: 40px; height: auto; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -140,7 +160,7 @@
 </div>
 
 <script>
-    // --- UPDATE TIME & DATE ---
+    // --- LIVE CLOCK LOGIC ---
     function updateClock() {
         const now = new Date();
         const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
@@ -152,7 +172,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- SHEETS LOGIC ---
+    // --- GOOGLE SHEETS & DATA SAVING LOGIC ---
     const sheetId = '1CCWJaJCsaewVCpmCglL50xKdamLB77wanCY-Xxlg4kg'; 
     let lastDataHash = ""; 
 
@@ -184,6 +204,8 @@
 
     window.renderData = function(data) {
         if (!data || !data.table) return;
+
+        // Only update the website if the Sheet data actually changed
         const currentDataString = JSON.stringify(data.table.rows);
         if (currentDataString === lastDataHash) return;
         lastDataHash = currentDataString;
@@ -216,6 +238,7 @@
     };
 
     fetchData();
+    // Refresh every 5 minutes (300,000ms) to save internet data
     setInterval(fetchData, 300000); 
 </script>
 
