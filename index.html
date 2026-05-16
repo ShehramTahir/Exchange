@@ -10,12 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --canvas-soft: #e8ebe6; /* Sage Background */
-            --white: #ffffff;       /* Card Background */
-            --ink: #0e0f0c;         /* Near-black Text */
-            --primary: #9fe870;     /* Wise Lime Green */
-            --body-text: #454745;   /* Secondary Text */
-            --positive: #2ead4b;    /* Success Green */
+            --canvas-soft: #e8ebe6; 
+            --white: #ffffff;       
+            --ink: #0e0f0c;         
+            --primary: #9fe870;     
+            --body-text: #454745;   
+            --positive: #2ead4b;    
         }
 
         body {
@@ -27,6 +27,12 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            
+            /* PREVENTS ACCIDENTAL TEXT SELECTION ACROSS THE WHOLE PAGE */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         /* FLEXBOX HEADER */
@@ -122,7 +128,7 @@
             flex-grow: 1; 
             position: relative; 
             overflow: hidden; 
-            touch-action: none; /* Prevents default browser refreshing while dragging */
+            touch-action: none; /* Prevents mobile browser pull-to-refresh gestures */
         }
         #scroller { 
             position: absolute; 
@@ -134,11 +140,6 @@
         }
         #scroller:active {
             cursor: grabbing;
-        }
-
-        @keyframes scrollUp { 
-            0% { transform: translate3d(0, 0, 0); } 
-            100% { transform: translate3d(0, -50%, 0); } 
         }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 2vw 5vw; }
@@ -293,106 +294,77 @@
         });
 
         const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = html + html + html; // Loops content seamlessly
-        setupInteractions();
+        tableBody.innerHTML = html + html + html; 
+        
+        // Initialize the smooth engine after content finishes rendering
+        setupSmoothScrollEngine();
     };
 
-    // --- PAUSE, RESUME & TOUCH SCROLL INTERACTION LOGIC ---
-    function setupInteractions() {
+    // --- ANTI-SHAKE UNIFIED ANIMATION ENGINE ---
+    function setupSmoothScrollEngine() {
         const container = document.getElementById('scroll-container');
         const scroller = document.getElementById('scroller');
-        
-        // Start the automatic infinite loop scrolling
-        scroller.style.animation = 'scrollUp 45s linear infinite';
 
-        let isDragging = false;
-        let startY = 0;
-        let currentTranslateY = 0;
-        let animationOffset = 0;
+        let yPos = 0;              // Current position coordinate
+        let speed = 0.8;           // Running speed pixels per frame
+        let isPaused = false;      // Hover state tracker
+        let isDragging = false;    // Pointer drag tracker
+        let startY = 0;            // Starting coordinate drag reference
 
-        // Helper to get current rendered transform Y coordinates
-        function getComputedY() {
-            const style = window.getComputedStyle(scroller);
-            const matrix = new WebKitCSSMatrix(style.transform);
-            return matrix.m42;
-        }
+        function updateLoop() {
+            const loopBoundary = -scroller.offsetHeight / 3;
 
-        // DESKTOP: Hovering freezes the list, moving mouse away resumes it
-        container.addEventListener('mouseenter', () => {
-            if (!isDragging) scroller.style.animationPlayState = 'paused';
-        });
-
-        container.addEventListener('mouseleave', () => {
-            if (!isDragging) scroller.style.animationPlayState = 'running';
-        });
-
-        // MOBILE & MOUSE DRAGGING INTEGRATION
-        function dragStart(e) {
-            isDragging = true;
-            scroller.style.animation = 'none'; // Kill animation strictly during manual scroll
-            
-            // Accommodate both touch input or a standard mouse click drag
-            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
-            startY = pageY - currentTranslateY;
-        }
-
-        function dragMove(e) {
-            if (!isDragging) return;
-            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
-            currentTranslateY = pageY - startY;
-
-            // Loop parameters boundary validation
-            const halfHeight = -scroller.offsetHeight / 2;
-            if (currentTranslateY > 0) currentTranslateY = halfHeight;
-            if (currentTranslateY < halfHeight) currentTranslateY = 0;
-
-            scroller.style.transform = `translate3d(0, ${currentTranslateY}px, 0)`;
-        }
-
-        function dragEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-
-            // Dynamically recalculate new CSS keyframes based on where the user dropped the list
-            const currentY = currentTranslateY;
-            const totalHeight = scroller.offsetHeight / 2;
-            const percentage = Math.abs(currentY / totalHeight) * 100;
-
-            // Generate an updated synchronized runtime styling ruleset
-            const styleId = 'dynamic-scroll-style';
-            let dynamicStyle = document.getElementById(styleId);
-            if (!dynamicStyle) {
-                dynamicStyle = document.createElement('style');
-                dynamicStyle.id = styleId;
-                document.head.appendChild(dynamicStyle);
-            }
-
-            dynamicStyle.innerHTML = `
-                @keyframes dynamicScrollUp {
-                    0% { transform: translate3d(0, ${currentY}px, 0); }
-                    100% { transform: translate3d(0, ${currentY - totalHeight}px, 0); }
+            if (!isPaused && !isDragging) {
+                yPos -= speed; // Move upwards smoothly
+                
+                // Infinite seamless loop point check
+                if (yPos <= loopBoundary) {
+                    yPos = 0;
                 }
-            `;
-
-            scroller.style.animation = 'dynamicScrollUp 45s linear infinite';
-            scroller.style.animationPlayState = 'running';
+                scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
+            }
+            requestAnimationFrame(updateLoop);
         }
 
-        // Bind standard Touch Inputs
-        container.addEventListener('touchstart', (e) => {
-            currentTranslateY = getComputedY();
-            dragStart(e);
-        }, { passive: true });
-        container.addEventListener('touchmove', dragMove, { passive: true });
-        container.addEventListener('touchend', dragEnd);
+        // DESKTOP HOVER LISTENERS
+        container.addEventListener('mouseenter', () => isPaused = true);
+        container.addEventListener('mouseleave', () => isPaused = false);
 
-        // Bind standard Mouse Inputs (for desktop dragging capability too)
-        container.addEventListener('mousedown', (e) => {
-            currentTranslateY = getComputedY();
-            dragStart(e);
-        });
-        window.addEventListener('mousemove', dragMove);
-        window.addEventListener('mouseup', dragEnd);
+        // DRAG ENGINE CONTROL HANDLERS
+        function onDragStart(e) {
+            isDragging = true;
+            const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
+            startY = pointerY - yPos;
+        }
+
+        function onDragMove(e) {
+            if (!isDragging) return;
+            const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
+            yPos = pointerY - startY;
+
+            const loopBoundary = -scroller.offsetHeight / 3;
+            if (yPos > 0) yPos = loopBoundary;
+            if (yPos < loopBoundary) yPos = 0;
+
+            scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
+        }
+
+        function onDragEnd() {
+            isDragging = false;
+        }
+
+        // Mobile touch events
+        container.addEventListener('touchstart', onDragStart, { passive: true });
+        container.addEventListener('touchmove', onDragMove, { passive: true });
+        container.addEventListener('touchend', onDragEnd);
+
+        // Desktop mouse dragging events
+        container.addEventListener('mousedown', onDragStart);
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('mouseup', onDragEnd);
+
+        // Kickstart the render cycle loop
+        requestAnimationFrame(updateLoop);
     }
 
     fetchData();
