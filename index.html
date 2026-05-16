@@ -129,6 +129,8 @@
             overflow: hidden; 
             touch-action: none; 
         }
+        
+        /* Unified container setup to guarantee subpixel safety */
         #scroller { 
             position: absolute; 
             width: 100%; 
@@ -136,12 +138,19 @@
             left: 0; 
             will-change: transform; 
             cursor: grab;
+            display: flex;
+            flex-direction: column;
         }
         #scroller:active {
             cursor: grabbing;
         }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 2vw 5vw; }
+        .scroll-group {
+            width: 100%;
+            display: block;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 1.5vh; padding: 0 5vw 0 5vw; }
         tr { background: var(--white); border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
         td { padding: 2.5vh 3vw; vertical-align: middle; }
         
@@ -210,10 +219,12 @@
 
 <div id="scroll-container">
     <div id="scroller">
-        <table id="ratesTable">
-            <tbody id="tableBody1"></tbody>
-            <tbody id="tableBody2"></tbody>
-        </table>
+        <div class="scroll-group" id="group1">
+            <table><tbody id="tableBody1"></tbody></table>
+        </div>
+        <div class="scroll-group" id="group2">
+            <table><tbody id="tableBody2"></tbody></table>
+        </div>
     </div>
 </div>
 
@@ -293,18 +304,17 @@
             </tr>`;
         });
 
-        // Split lists cleanly into two identical elements for perfect boundary tracking
         document.getElementById('tableBody1').innerHTML = html;
         document.getElementById('tableBody2').innerHTML = html; 
         
         setupSmoothScrollEngine();
     };
 
-    // --- GLITCH-FREE UNIFIED SCROLL ENGINE ---
+    // --- BULLETPROOF SEAMLESS ENGINE ---
     function setupSmoothScrollEngine() {
         const container = document.getElementById('scroll-container');
         const scroller = document.getElementById('scroller');
-        const firstGroup = document.getElementById('tableBody1');
+        const group1 = document.getElementById('group1');
 
         let yPos = 0;              
         let speed = 0.8;           
@@ -313,26 +323,26 @@
         let startY = 0;            
 
         function updateLoop() {
-            // Get the EXACT pixel height of one full list set dynamically
-            const loopBoundary = -firstGroup.offsetHeight;
+            // Using getBoundingClientRect targets subpixel precision safely across browsers
+            const h = group1.getBoundingClientRect().height;
 
             if (!isPaused && !isDragging) {
                 yPos -= speed; 
                 
-                // Perfect seamless loop checkpoint
-                if (yPos <= loopBoundary) {
-                    yPos += firstGroup.offsetHeight; // Reset smoothly without losing frame steps
+                // If the first group passes completely, reset using its precise box layout value
+                if (yPos <= -h) {
+                    yPos += h; 
                 }
                 scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
             }
             requestAnimationFrame(updateLoop);
         }
 
-        // HOVER LISTENERS
+        // HOVER CONFIGURATIONS
         container.addEventListener('mouseenter', () => isPaused = true);
         container.addEventListener('mouseleave', () => isPaused = false);
 
-        // DRAG EVENT LOGIC
+        // MANUAL DRAG/SCROLL COMPUTATION
         function onDragStart(e) {
             isDragging = true;
             const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
@@ -344,11 +354,11 @@
             const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
             yPos = pointerY - startY;
 
-            const loopBoundary = -firstGroup.offsetHeight;
+            const h = group1.getBoundingClientRect().height;
             
-            // Loop boundaries for scrolling manually
-            if (yPos > 0) yPos -= firstGroup.offsetHeight;
-            if (yPos < loopBoundary) yPos += firstGroup.offsetHeight;
+            // Loop bounding structures during active drag positioning
+            if (yPos > 0) yPos -= h;
+            if (yPos <= -h) yPos += h;
 
             scroller.style.transform = `translate3d(0, ${yPos}px, 0)`;
         }
@@ -357,17 +367,17 @@
             isDragging = false;
         }
 
-        // Mobile touch events
+        // Mobile Events
         container.addEventListener('touchstart', onDragStart, { passive: true });
         container.addEventListener('touchmove', onDragMove, { passive: true });
         container.addEventListener('touchend', onDragEnd);
 
-        // Desktop mouse dragging events
+        // Desktop Events
         container.addEventListener('mousedown', onDragStart);
         window.addEventListener('mousemove', onDragMove);
         window.addEventListener('mouseup', onDragEnd);
 
-        // Run Loop
+        // Initialize frame request loop
         requestAnimationFrame(updateLoop);
     }
 
