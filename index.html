@@ -28,6 +28,7 @@
             display: flex;
             flex-direction: column;
             
+            /* STOPS ACCIDENTAL TEXT HIGHLIGHTING */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -130,7 +131,6 @@
             touch-action: none; 
         }
         
-        /* Unified container setup to guarantee subpixel safety */
         #scroller { 
             position: absolute; 
             width: 100%; 
@@ -310,7 +310,7 @@
         setupSmoothScrollEngine();
     };
 
-    // --- BULLETPROOF SEAMLESS ENGINE ---
+    // --- GLITCH-FREE INTERACTION SCROLL ENGINE ---
     function setupSmoothScrollEngine() {
         const container = document.getElementById('scroll-container');
         const scroller = document.getElementById('scroller');
@@ -323,13 +323,11 @@
         let startY = 0;            
 
         function updateLoop() {
-            // Using getBoundingClientRect targets subpixel precision safely across browsers
             const h = group1.getBoundingClientRect().height;
 
             if (!isPaused && !isDragging) {
                 yPos -= speed; 
                 
-                // If the first group passes completely, reset using its precise box layout value
                 if (yPos <= -h) {
                     yPos += h; 
                 }
@@ -338,13 +336,14 @@
             requestAnimationFrame(updateLoop);
         }
 
-        // HOVER CONFIGURATIONS
+        // DESKTOP HOVER LISTENERS
         container.addEventListener('mouseenter', () => isPaused = true);
         container.addEventListener('mouseleave', () => isPaused = false);
 
-        // MANUAL DRAG/SCROLL COMPUTATION
+        // DRAG ENGINE CONTROL HANDLERS
         function onDragStart(e) {
             isDragging = true;
+            isPaused = true; 
             const pointerY = e.touches ? e.touches[0].pageY : e.pageY;
             startY = pointerY - yPos;
         }
@@ -356,7 +355,6 @@
 
             const h = group1.getBoundingClientRect().height;
             
-            // Loop bounding structures during active drag positioning
             if (yPos > 0) yPos -= h;
             if (yPos <= -h) yPos += h;
 
@@ -365,19 +363,20 @@
 
         function onDragEnd() {
             isDragging = false;
+            isPaused = false; 
         }
 
-        // Mobile Events
+        // Mobile Touch Events
         container.addEventListener('touchstart', onDragStart, { passive: true });
         container.addEventListener('touchmove', onDragMove, { passive: true });
         container.addEventListener('touchend', onDragEnd);
 
-        // Desktop Events
+        // Desktop Mouse Dragging Events
         container.addEventListener('mousedown', onDragStart);
         window.addEventListener('mousemove', onDragMove);
         window.addEventListener('mouseup', onDragEnd);
 
-        // Initialize frame request loop
+        // Run Render Loop
         requestAnimationFrame(updateLoop);
     }
 
