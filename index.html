@@ -118,8 +118,23 @@
         }
 
         /* SCROLLING TABLE SECTION */
-        #scroll-container { flex-grow: 1; position: relative; overflow: hidden; }
-        #scroller { position: absolute; width: 100%; top: 0; left: 0; will-change: transform; }
+        #scroll-container { 
+            flex-grow: 1; 
+            position: relative; 
+            overflow: hidden; 
+            touch-action: none; /* Prevents default browser refreshing while dragging */
+        }
+        #scroller { 
+            position: absolute; 
+            width: 100%; 
+            top: 0; 
+            left: 0; 
+            will-change: transform; 
+            cursor: grab;
+        }
+        #scroller:active {
+            cursor: grabbing;
+        }
 
         @keyframes scrollUp { 
             0% { transform: translate3d(0, 0, 0); } 
@@ -206,7 +221,7 @@
 </footer>
 
 <script>
-    // --- LIVE CLOCK LOGIC (WITHOUT SECONDS) ---
+    // --- LIVE CLOCK LOGIC ---
     function updateClock() {
         const now = new Date();
         const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
@@ -218,7 +233,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- GOOGLE SHEETS & DATA SAVING LOGIC ---
+    // --- GOOGLE SHEETS LOGIC ---
     const sheetId = '1CCWJaJCsaewVCpmCglL50xKdamLB77wanCY-Xxlg4kg'; 
     let lastDataHash = ""; 
 
@@ -278,9 +293,107 @@
         });
 
         const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = html + html + html; 
-        document.getElementById('scroller').style.animation = 'scrollUp 45s linear infinite';
+        tableBody.innerHTML = html + html + html; // Loops content seamlessly
+        setupInteractions();
     };
+
+    // --- PAUSE, RESUME & TOUCH SCROLL INTERACTION LOGIC ---
+    function setupInteractions() {
+        const container = document.getElementById('scroll-container');
+        const scroller = document.getElementById('scroller');
+        
+        // Start the automatic infinite loop scrolling
+        scroller.style.animation = 'scrollUp 45s linear infinite';
+
+        let isDragging = false;
+        let startY = 0;
+        let currentTranslateY = 0;
+        let animationOffset = 0;
+
+        // Helper to get current rendered transform Y coordinates
+        function getComputedY() {
+            const style = window.getComputedStyle(scroller);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            return matrix.m42;
+        }
+
+        // DESKTOP: Hovering freezes the list, moving mouse away resumes it
+        container.addEventListener('mouseenter', () => {
+            if (!isDragging) scroller.style.animationPlayState = 'paused';
+        });
+
+        container.addEventListener('mouseleave', () => {
+            if (!isDragging) scroller.style.animationPlayState = 'running';
+        });
+
+        // MOBILE & MOUSE DRAGGING INTEGRATION
+        function dragStart(e) {
+            isDragging = true;
+            scroller.style.animation = 'none'; // Kill animation strictly during manual scroll
+            
+            // Accommodate both touch input or a standard mouse click drag
+            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+            startY = pageY - currentTranslateY;
+        }
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+            currentTranslateY = pageY - startY;
+
+            // Loop parameters boundary validation
+            const halfHeight = -scroller.offsetHeight / 2;
+            if (currentTranslateY > 0) currentTranslateY = halfHeight;
+            if (currentTranslateY < halfHeight) currentTranslateY = 0;
+
+            scroller.style.transform = `translate3d(0, ${currentTranslateY}px, 0)`;
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            // Dynamically recalculate new CSS keyframes based on where the user dropped the list
+            const currentY = currentTranslateY;
+            const totalHeight = scroller.offsetHeight / 2;
+            const percentage = Math.abs(currentY / totalHeight) * 100;
+
+            // Generate an updated synchronized runtime styling ruleset
+            const styleId = 'dynamic-scroll-style';
+            let dynamicStyle = document.getElementById(styleId);
+            if (!dynamicStyle) {
+                dynamicStyle = document.createElement('style');
+                dynamicStyle.id = styleId;
+                document.head.appendChild(dynamicStyle);
+            }
+
+            dynamicStyle.innerHTML = `
+                @keyframes dynamicScrollUp {
+                    0% { transform: translate3d(0, ${currentY}px, 0); }
+                    100% { transform: translate3d(0, ${currentY - totalHeight}px, 0); }
+                }
+            `;
+
+            scroller.style.animation = 'dynamicScrollUp 45s linear infinite';
+            scroller.style.animationPlayState = 'running';
+        }
+
+        // Bind standard Touch Inputs
+        container.addEventListener('touchstart', (e) => {
+            currentTranslateY = getComputedY();
+            dragStart(e);
+        }, { passive: true });
+        container.addEventListener('touchmove', dragMove, { passive: true });
+        container.addEventListener('touchend', dragEnd);
+
+        // Bind standard Mouse Inputs (for desktop dragging capability too)
+        container.addEventListener('mousedown', (e) => {
+            currentTranslateY = getComputedY();
+            dragStart(e);
+        });
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('mouseup', dragEnd);
+    }
 
     fetchData();
     setInterval(fetchData, 300000); 
